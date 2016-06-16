@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>テスト</title>
+
+</head>
+
+<body>
+
+	<script language="JavaScript">
+	/*
+	 * Create folder accordingt to param.
+	 * @param basepath: as a root path
+	 * @param folderpath:the file's path you want to create
+	 */
+	function jsCreateFolder(basepath,folderpath){
+		var fso = new ActiveXObject("Scripting.FileSystemObject");
+
+		//get the file path
+		fso.CreateFolder (basepath);
+		return true;
+	}
+
+	/*
+	 * Copy File to the folder you have set in pathto.
+	 * @param filepath:the file's path you want to copy
+	 * @param pathto: the path you want to copy to
+	 */
+	function jsCopyFileToPath(filepath,pathto){
+		var fso = new ActiveXObject("Scripting.FileSystemObject");
+		//get the file path
+		var f = fso.GetFile(filepath);
+		fso.CopyFile(f, pathto + "\\" + f.Name);
+		return true;
+	}
+
+	/*
+	 * Get  all files you want to copy from a txtfile
+	 * @param fileslist:the list's full path
+	 */
+	function jsGetFileList(fileslist){
+		var fso = new ActiveXObject("Scripting.FileSystemObject");
+		var f = fso.opentextfile(fileslist,1,true);
+		var strfile;
+		var arrfiles = new Array();
+		while (!f.AtEndOfStream)
+		{
+			strfile = f.Readline();
+			arrfiles.push(strfile);
+		}
+		return arrfiles;
+	}
+
+	function CopyFile(fileslist){
+		var list = new Array();
+		var fso = new ActiveXObject("Scripting.FileSystemObject");
+		var i = 0;
+		var pathto = FolderPathTo.value;
+		list = jsGetFileList(fileslist);
+
+		// check the valid of target path
+		if (!fso.FolderExists(pathto)){
+			alert("You have set a WRONG path!!");
+			return false;
+		}
+
+		// check and correct the format of target path
+		// ex: D:\weigo -> D:\weigo\
+		if (pathto.substr(pathto.length-1) != "\\" ){
+			pathto = pathto + "\\"
+		}
+
+		list.push("EOF");
+		while(list[i]!=="EOF")
+		{
+			var rpath = list[i].substr(2);
+
+			//　get relative path
+			rpath = rpath.substr(1,rpath.lastIndexOf("\\"));
+			var listrpath = rpath.split("\\");
+
+			/* create folder structure:
+			   use pathto as base path and join
+			   relative path rpath
+			*/
+			for (var j = 0;j < listrpath.length;j++){
+				if(!fso.FolderExists(pathto + listrpath[j])){
+					fso.CreateFolder (pathto + listrpath[j]);
+					pathto = pathto + listrpath[j] + "\\";
+				}
+			}
+
+			// copy file
+			jsCopyFileToPath(list[i],pathto);
+			i = i + 1;
+		}
+		return true;
+	}
+	</script>
+	<table style="width:100%;">
+		<tr>
+			<td>
+				<input id="TargetFilesPath" type="file"/></td>
+			<td>
+				&nbsp;</td>
+			<td>
+				&nbsp;</td>
+		</tr>
+		<tr>
+			<td>
+				<input id="FolderPathTo" type="text" /><input id="BTN1" type="button" value="SetFolder" /></td>
+			<td>
+				&nbsp;</td>
+			<td>
+				&nbsp;</td>
+		</tr>
+		<tr>
+			<td>
+				<input id="BTN3" name="Submit" type="submit" value="Run!" onclick = "CopyFile(TargetFilesPath.value)"/></td>
+			<td>
+				&nbsp;</td>
+			<td>
+				&nbsp;</td>
+		</tr>
+	</table>
+	<input id="pathto" type="hidden" />
+</body>
+</html>
