@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -58,6 +58,7 @@
 		var fso = new ActiveXObject("Scripting.FileSystemObject");
 		var i = 0;
 		var pathto = FolderPathTo.value;
+		var PATHTO = FolderPathTo.value;
 		list = jsGetFileList(fileslist);
 
 		// check the valid of target path
@@ -69,22 +70,22 @@
 		// check and correct the format of target path
 		// ex: D:\weigo -> D:\weigo\
 		if (pathto.substr(pathto.length-1) != "\\" ){
-			pathto = pathto + "\\"
+			pathto = pathto + "\\";
+			PATHTO = pathto;
 		}
 
 		list.push("EOF");
 		while(list[i]!=="EOF")
 		{
-			//list out unexist files
+			// list out unexist files
 			if(!fso.FileExists(list[i])){	
 				nofilelist.push(list[i]);
 				i=i+1;
-				continue;
-						
+				continue;			
              }
 			var rpath = list[i].substr(2);
 
-			//　get relative path
+			// get relative path
 			rpath = rpath.substr(1,rpath.lastIndexOf("\\"));
 			var listrpath = rpath.split("\\");
 
@@ -97,11 +98,18 @@
 					fso.CreateFolder (pathto + listrpath[j]);
 					pathto = pathto + listrpath[j] + "\\";
 				}
+				else{
+					pathto = pathto + listrpath[j] + "\\";
+				}
 			}
 
+			if (pathto.substr(pathto.length-2) == "\\\\" ){
+				pathto = pathto.substr(0,pathto.length-1);
+			}
 			// copy file
 			jsCopyFileToPath(list[i],pathto);
 			i = i + 1;
+			pathto = PATHTO;
 		}
 		
 		//unexist files alert
@@ -109,7 +117,7 @@
 			var message =nofilelist.join(";");
 			alert(message);
 	    }else{
-			alert("Completed")
+			alert("DONE!");
 		}
 		return true;
 	}
