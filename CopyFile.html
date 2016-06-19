@@ -54,6 +54,7 @@
 
 	function CopyFile(fileslist){
 		var list = new Array();
+		var nofilelist =new Array();
 		var fso = new ActiveXObject("Scripting.FileSystemObject");
 		var i = 0;
 		var pathto = FolderPathTo.value;
@@ -74,6 +75,13 @@
 		list.push("EOF");
 		while(list[i]!=="EOF")
 		{
+			//list out unexist files
+			if(!fso.FileExists(list[i])){	
+				nofilelist.push(list[i]);
+				i=i+1;
+				continue;
+						
+             }
 			var rpath = list[i].substr(2);
 
 			//　get relative path
@@ -94,6 +102,14 @@
 			// copy file
 			jsCopyFileToPath(list[i],pathto);
 			i = i + 1;
+		}
+		
+		//unexist files alert
+		if(nofilelist.length>0){
+			var message =nofilelist.join(";");
+			alert(message);
+	    }else{
+			alert("Completed")
 		}
 		return true;
 	}
