@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>CheckDegradation</title>
+</head>
+<body>
+	<table id="tbl">
+		<tr>
+			<td>
+				<lable id="lblPath">FilePath(New)</lable></td>
+			<td>
+				<input id="FilePath" type="file"/></td>
+		</tr>
+		<tr>
+		 	<td colspan="2">
+				<lable id="lblIns">※The instruction is in readme.txt</lable></td>
+		</tr>
+		<tr>
+			<td>
+				<input id="BTN3" name="Submit" type="submit" value="Run!" onclick = "jsMain(FilePath.value)"/></td>
+		</tr>
+	</table>
+	<input id="pathto" type="hidden" />
+</body>
+
+	<script language="JavaScript">
+	/*
+	 * Get  all files you want to copy from a txtfile
+	 * @param fileslist:the list's full path
+	 */
+	function jsGetFileList(fileslist,mode){
+		var fso = new ActiveXObject("Scripting.FileSystemObject");
+		var f = fso.opentextfile(fileslist,1,true);
+		var strfile;
+		var arrfiles = new Array();
+		while (!f.AtEndOfStream)
+		{
+			strfile = f.Readline();
+			switch (mode){
+				case "NEW":
+					arrfiles.push(strfile);
+					break;
+				case "OLD":
+					strfile = strfile.replace( "NEW" , "OLD" ) ;
+					arrfiles.push(strfile);
+					break;
+			}
+		}
+		return arrfiles;
+	}
+
+
+	/*
+	 * Get all files you want to copy from a txtfile
+	 * @param fileslist:the list's full path
+	 */
+	function jsMain(fileslist){
+
+		var KEYWORD1 = '履歴'		 	  /* can define the start of header comment*/ 
+		var KEYWORD2 = 'Response.' 		/* can define the end of header comment*/ 
+
+		var fso = new ActiveXObject("Scripting.FileSystemObject");
+		var listNew = new Array();
+		var listOld = new Array();
+		var errFileList =new Array();
+
+		/* get both file path*/
+		listNew = jsGetFileList(fileslist,"NEW");
+		listOld = jsGetFileList(fileslist,"OLD");
+
+
+		/* main circulation*/
+		for (var i = 0; i < listNew.length; i++){
+
+			// check the valid of target path
+			if (!fso.FileExists(listNew[i])){
+				alert("You have set a WRONG path!!");
+			return false;
+			}
+			var fNew = fso.opentextfile(listNew[i],1,true);
+			var fOld = fso.opentextfile(listOld[i],1,true);
+			var listRevisionNew = new Array();
+			var listRevisionOld = new Array();
+
+			/* check header comment*/
+			/* JudgementRule:The amount of New's comment must be lager than which in Old's*/
+			while (!fNew.AtEndOfStream && !fOld.AtEndOfStream)
+			{
+				var exitFlg;
+				var strLineNew;
+				var strLineOld;
+
+				strLineNew = fNew.readline();
+				strLineOld = fOld.readline();
+				if (strLineNew.indexOf(KEYWORD1) > 0 ){
+					listRevisionNew.push(strLineNew);
+				}
+				if (strLineOld.indexOf(KEYWORD1) > 0 ){
+					listRevisionOld.push(strLineOld);
+				}
+				if (strLineNew.indexOf(KEYWORD2) > 0 && exitFlg){
+					break;
+				}
+				if (strLineOld.indexOf(KEYWORD2) > 0 && !exitFlg){
+					exitFlg = true;
+				}
+			}
+			if ( listRevisionNew.length <= listRevisionOld.length ){
+				errFileList.push(listNew[i]);
+			}
+		}
+		
+		//degraded files alert
+		if(errFileList.length>0){
+			var message =errFileList.join(";");
+			alert(message);
+	    }else{
+			alert("DONE!");
+		}
+		return true;
+	}
+	</script>
+</html>
